@@ -23,7 +23,7 @@ model Room {
 
 model Player {
   id                String  @id @default(uuid())
-  displayName       String  @db.VarChar(15)
+  name              String  @db.VarChar(15)
   score             Int     @default(0)
   isHost            Boolean @default(false)
   roomId            String
