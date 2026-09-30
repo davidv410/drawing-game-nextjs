@@ -1,4 +1,5 @@
 import { createPlayer, createRoomAndHost } from "@/actions/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default function Home() {
   
@@ -7,13 +8,13 @@ export default function Home() {
         <form className="border" action={createRoomAndHost}>
           <h1>CREATE ROOM</h1>
           <input name="name" type="text" placeholder="player-name"/><br/>
-          <button>CREATE</button>
+          <SubmitButton/>
         </form>
         <form className="border" action={createPlayer}>
           <h1>JOIN ROOM</h1>
           <input name="name" type="text" placeholder="player-name"/><br/>
           <input name="code" type="text" placeholder="room-code"/><br/>
-          <button>JOIN</button>
+          <SubmitButton/>
         </form>
     </div>
   );
