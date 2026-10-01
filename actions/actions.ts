@@ -64,3 +64,18 @@ export const createPlayer = async (formData: FormData) => {
     console.log('player created')
     redirect(`/room/${room.code}`)
 }
+
+export const startGame = async (roomCode: string) => {
+  await fetch(`${process.env.SOCKET_SERVER_URL}/broadcast`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "socket-secret": process.env.SOCKET_SECRET!,
+    },
+    body: JSON.stringify({
+      roomId: roomCode,
+      event: "round_started",
+      payload: { message: "the game has started!" },
+    }),
+  });
+};
