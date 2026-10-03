@@ -1,5 +1,6 @@
 "use server"
 
+import { Player } from "@/app/generated/prisma/client"
 import { prisma } from "@/lib/db"
 import { generateRoomCode } from "@/utils/generateRoomCode"
 import { cookies } from "next/headers"
@@ -65,17 +66,45 @@ export const createPlayer = async (formData: FormData) => {
     redirect(`/room/${room.code}`)
 }
 
+const WORDS = ["guitar", "volcano", "sandwich", "octopus", "umbrella", "car", "sunset", "dog", "ball", "running"]
+
+const pickWord = () => {
+    return WORDS[Math.floor(Math.random() * WORDS.length)]
+}
+
+const pickDrawer = (players: Player[]) => {
+    return players[Math.floor(Math.random() * players.length)]
+}
+
 export const startGame = async (roomCode: string) => {
-  await fetch(`${process.env.SOCKET_SERVER_URL}/broadcast`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "socket-secret": process.env.SOCKET_SECRET!,
-    },
-    body: JSON.stringify({
-      roomId: roomCode,
-      event: "round_started",
-      payload: { message: "the game has started!" },
-    }),
-  });
+    const room = await prisma.room.findUnique({
+        where: { code: roomCode },
+        include: { players: true },
+    })
+
+    if(!room) return console.log("room doesnt exist") 
+
+    const word = pickWord()
+    const drawer = pickDrawer(room.players)
+    
+    await prisma.round.create({
+        data: {
+            word,
+            drawerId: drawer.id,
+            roomId: room.id
+        }
+    })
+ 
+    await fetch(`${process.env.SOCKET_SERVER_URL}/broadcast`, {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        "socket-secret": process.env.SOCKET_SECRET!,
+        },
+        body: JSON.stringify({
+        roomId: roomCode,
+        drawerId: drawer.id,
+        word
+        }),
+    });
 };
