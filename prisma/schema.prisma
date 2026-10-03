@@ -13,12 +13,18 @@ enum Status {
   FINISHED
 }
 
+enum RoundStatus {
+  IN_PROGRESS
+  FINISHED
+}
+
 model Room {
   id                String @id @default(uuid())
   code              String @unique @db.VarChar(10)
   status            Status @default(LOBBY)
   createdAt         DateTime @default(now())
   players Player[]
+  rounds Round[]
 }
 
 model Player {
@@ -28,4 +34,30 @@ model Player {
   isHost            Boolean @default(false)
   roomId            String
   room Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  rounds Round[]
+  guesses Guess[]
+}
+
+model Round {
+  id                  String  @id @default(uuid())
+  word                String
+  status              RoundStatus @default(IN_PROGRESS)
+  drawerId            String
+  drawer Player       @relation(fields: [drawerId], references: [id], onDelete: Cascade)
+  roomId              String
+  room Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  guesses Guess[]
+}
+
+model Guess {
+  id              String  @id @default(uuid())
+  guess           String
+  correct         Boolean
+  guessedAt       DateTime @default(now())
+  playerId        String
+  player Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  roundId         String
+  round Round     @relation(fields: [roundId], references: [id], onDelete: Cascade)
 }
