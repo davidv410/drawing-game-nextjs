@@ -40,8 +40,6 @@ const Room = async ({params}: {params: Promise<{roomCode: string}>}) => {
             </form>
             }
 
-            <canvas className='w-150 h-150 bg-white'/>
-
             <GameClient roomId={room.code} playerId={player.id}/>
         </>
     )
