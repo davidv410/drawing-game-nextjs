@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react"
 import { io, Socket } from "socket.io-client"
 
 export default function GameClient({ roomId, playerId }: {roomId: string, playerId: string}) {
-
   const socketRef = useRef<Socket | null>(null)
   
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [roomStatus, setRoomStatus] = useState<"LOBBY" | "IN_PROGRESS">("LOBBY")
+  const [word, setWord] = useState<string | null>(null)
 
   useEffect(() => {
     const socket = io("http://localhost:5000", {
@@ -24,10 +25,12 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
 
     socket.on("drawer_broadcast", (data) => {
       console.log("round started:", data)
+      setWord(data.word)
     })
 
     socket.on("round_started", (data) => {
       console.log("round started:", data)
+      setRoomStatus("IN_PROGRESS")
     })
 
     socket.on("stroke", (data: { x: number; y: number; drawing: boolean }) => {
@@ -68,7 +71,7 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
       context.strokeStyle = "black"
       context.lineWidth = 5
       contextRef.current = context
-    }, [])
+    }, [roomStatus])
 
     const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
       const { offsetX, offsetY } = e.nativeEvent
@@ -95,13 +98,30 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
 
   return (
     <>
-      <canvas
-        className="bg-white"
-        onMouseDown={startDrawing}
-        onMouseUp={endDrawing}
-        onMouseMove={draw}
-        ref={canvasRef}
-      />
-    </>
+    { roomStatus === 'LOBBY' ? null : 
+    <div>
+      {
+      word ? 
+      <div className="flex">
+        You are the drawer and the word is - <p>{word}</p>
+      </div>
+      :
+      <form action="">
+        <input className="w-150 bg-whit" placeholder="guess the word"></input>
+        <button type="submit">submit</button>
+      </form>
+      }
+
+        <canvas
+          className="bg-white"
+          onMouseDown={startDrawing}
+          onMouseUp={endDrawing}
+          onMouseMove={draw}
+          ref={canvasRef}
+        />
+    </div>
+    }
+
+  </>
   );
 }
