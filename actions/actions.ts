@@ -87,7 +87,7 @@ export const startGame = async (roomCode: string) => {
     const word = pickWord()
     const drawer = pickDrawer(room.players)
     
-    await prisma.round.create({
+    const round = await prisma.round.create({
         data: {
             word,
             drawerId: drawer.id,
@@ -103,6 +103,7 @@ export const startGame = async (roomCode: string) => {
         },
         body: JSON.stringify({
         roomId: roomCode,
+        roundId: round.id,
         drawerId: drawer.id,
         word
         }),
@@ -117,3 +118,8 @@ export const startGame = async (roomCode: string) => {
         }
     })
 };
+
+export const checkGuess = async (roundId: string, formData: FormData) => {
+    console.log(roundId)
+    console.log(formData)
+}
