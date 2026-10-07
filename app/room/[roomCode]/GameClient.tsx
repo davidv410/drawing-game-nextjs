@@ -1,5 +1,6 @@
 "use client"
 
+import { checkGuess } from "@/actions/actions"
 import { useEffect, useRef, useState } from "react"
 import { io, Socket } from "socket.io-client"
 
@@ -11,6 +12,7 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
   const [isDrawing, setIsDrawing] = useState(false)
   const [roomStatus, setRoomStatus] = useState<"LOBBY" | "IN_PROGRESS">("LOBBY")
   const [word, setWord] = useState<string | null>(null)
+  const [roundId, setRoundId] = useState<string>("")
 
   useEffect(() => {
     const socket = io("http://localhost:5000", {
@@ -31,6 +33,7 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
     socket.on("round_started", (data) => {
       console.log("round started:", data)
       setRoomStatus("IN_PROGRESS")
+      setRoundId(data.roundId)
     })
 
     socket.on("stroke", (data: { x: number; y: number; drawing: boolean }) => {
@@ -96,6 +99,8 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
       socketRef.current?.emit("stroke", { x: offsetX, y: offsetY, drawing: true })
     }
 
+    const checkGuessWithRound = checkGuess.bind(null, roundId)
+
   return (
     <>
     { roomStatus === 'LOBBY' ? null : 
@@ -106,8 +111,8 @@ export default function GameClient({ roomId, playerId }: {roomId: string, player
         You are the drawer and the word is - <p>{word}</p>
       </div>
       :
-      <form action="">
-        <input className="w-150 bg-whit" placeholder="guess the word"></input>
+      <form action={checkGuessWithRound}>
+        <input className="w-150 bg-whit" placeholder="guess the word" name="guess"></input>
         <button type="submit">submit</button>
       </form>
       }
