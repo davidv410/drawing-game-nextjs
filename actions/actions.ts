@@ -107,4 +107,13 @@ export const startGame = async (roomCode: string) => {
         word
         }),
     });
+
+    await prisma.room.update({
+        where: {
+            id: room.id
+        },
+        data: {
+            status: "IN_PROGRESS"
+        }
+    })
 };
